@@ -486,8 +486,25 @@ fn patch(path: PathBuf) -> PathBuf {
     path
 }
 
+/// SwivDesk: product permission defaults, seeded once at startup.
+/// These land in DEFAULT_SETTINGS, so they apply out of the box while an
+/// explicit user choice (stored in the config) still wins.
+fn seed_swivdesk_default_settings() {
+    static ONCE: std::sync::Once = std::sync::Once::new();
+    ONCE.call_once(|| {
+        let mut defaults = DEFAULT_SETTINGS.write().unwrap();
+        defaults
+            .entry("enable-file-transfer".to_owned())
+            .or_insert_with(|| "N".to_owned());
+        defaults
+            .entry("enable-clipboard".to_owned())
+            .or_insert_with(|| "N".to_owned());
+    });
+}
+
 impl Config2 {
     fn load() -> Config2 {
+        seed_swivdesk_default_settings();
         let mut config = Config::load_::<Config2>("2");
         let mut store = false;
         if let Some(mut socks) = config.socks {
@@ -607,6 +624,7 @@ impl Config {
     }
 
     fn load() -> Config {
+        seed_swivdesk_default_settings();
         let mut config = Config::load_::<Config>("");
         let mut store = false;
         if let Err(err) = Self::validate_or_decrypt_permanent_password_storage(&mut config) {
