@@ -499,6 +499,16 @@ fn seed_swivdesk_default_settings() {
         defaults
             .entry("enable-clipboard".to_owned())
             .or_insert_with(|| "N".to_owned());
+        drop(defaults);
+        // SwivDesk Support is the customer app: receive-only. Upstream's
+        // incoming-only mode (conn-type = incoming) hides the whole
+        // "control another computer" side of the home page and refuses
+        // outgoing connections, leaving just the Support ID + password card.
+        HARD_SETTINGS
+            .write()
+            .unwrap()
+            .entry("conn-type".to_owned())
+            .or_insert_with(|| "incoming".to_owned());
     });
 }
 
